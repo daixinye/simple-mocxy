@@ -1,6 +1,7 @@
 'use strict'
 const http = require('http')
 const url = require('url')
+const MockConfig = require('../config')
 
 class Proxy {
   constructor(config) {
@@ -9,8 +10,8 @@ class Proxy {
   }
 
   start() {
-    let port = this.config.port || 8989
-    this.server.listen(port).on('listening', function() {
+    let port = this.config.port || 9999
+    this.server.listen(port).on('listening', () => {
       console.log('server started on %s', port)
     })
   }
@@ -23,25 +24,39 @@ class Proxy {
       let { hostname, port, path } = url.parse(req.url)
       let { method, headers } = req
 
-      // 修改请求
+      let mockConfig = new MockConfig({
+        host: hostname,
+        path: path,
+        method: method
+      })
+
+      let ip = mockConfig.getIP()
+      let mock = mockConfig.getMock()
+
+      console.log('request: %s %s %s %s', hostname, port, path, method)
+
+      if (mock) {
+        res.end(JSON.stringify(mock))
+        return this
+      }
+
       let options = {
-        hostname,
+        hostname: ip || hostname,
         port,
         path,
         method,
         headers
       }
-      console.log('request: %s %s %s %s', hostname, port, path, method)
 
       let proxyReq = http
         .request(options, proxyRes => {
           res.writeHead(proxyRes.statusCode, proxyRes.headers)
-          // 修改响应
           proxyRes.pipe(res)
         })
         .on('error', err => res.end())
 
       req.pipe(proxyReq)
+      return this
     })
   }
 }
