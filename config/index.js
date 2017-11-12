@@ -16,7 +16,7 @@ class Config {
   }
 
   getMock() {
-    return this.mock.getMockData({
+    return this.mock.getMock({
       host: this.request.host,
       ip: this.hosts.getIP(this.request.host),
       path: this.request.path
@@ -54,7 +54,7 @@ class Hosts {
 class Mocks {
   constructor() {}
 
-  getMockData(request) {
+  getMock(request) {
     let { host, ip, path } = request
     return this._readMock(host, ip, path)
   }
