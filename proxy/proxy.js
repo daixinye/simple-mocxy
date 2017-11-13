@@ -1,7 +1,7 @@
 'use strict'
 const http = require('http')
 const url = require('url')
-const MockConfig = require('../config')
+const ProxyConfig = require('../config')
 
 const ENCODING = 'utf-8'
 
@@ -14,7 +14,7 @@ class Proxy {
   start() {
     let port = this.config.port || 9999
     this.server.listen(port).on('listening', () => {
-      console.log('server started on %s', port)
+      console.log('server started on %s \n', port)
     })
   }
 
@@ -26,19 +26,21 @@ class Proxy {
       let { hostname, port, path } = url.parse(req.url)
       let { method, headers } = req
 
-      let mockConfig = new MockConfig({
+      let proxyConfig = new ProxyConfig({
         host: hostname,
         path: path,
         method: method
       })
 
-      let ip = mockConfig.getIP()
-      let mock = mockConfig.getMock()
+      let ip = proxyConfig.getIP()
+      let mock = proxyConfig.getMock()
 
-      console.log('request: %s %s %s %s', hostname, port, path, method)
+      console.log('%s %s %s %s %s', Date(), method, hostname, port || 80, path)
 
       // response set Header
       res.setHeader('content-type', 'text/plain; charset=' + ENCODING)
+      res.setHeader('Access-Control-Allow-Origin', req.headers['origin'] || '*')
+      res.setHeader('Access-Control-Allow-Credentials', 'true')
 
       if (mock) {
         res.end(JSON.stringify(mock), ENCODING)
