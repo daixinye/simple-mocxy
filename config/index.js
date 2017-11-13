@@ -18,7 +18,6 @@ class Config {
   getMock() {
     return this.mock.getMock({
       host: this.request.host,
-      ip: this.hosts.getIP(this.request.host),
       path: this.request.path
     })
   }
@@ -55,16 +54,16 @@ class Mocks {
   constructor() {}
 
   getMock(request) {
-    let { host, ip, path } = request
-    return this._readMock(host, ip, path)
+    let { host, path } = request
+    return this._readMock(host, path)
   }
 
-  _getMockLocalPath(host, ip, path) {
-    return _path.join(MOCKS_PATH, `/${host}/${ip}/${path}.json`)
+  _getMockLocalPath(host, path) {
+    return _path.join(MOCKS_PATH, `/${host}/${path}`)
   }
 
-  _readMock(host, ip, path) {
-    let mockPath = this._getMockLocalPath(host, ip, path)
+  _readMock(host, path) {
+    let mockPath = this._getMockLocalPath(host, path)
     let isMockExist = fs.existsSync(mockPath)
     if (isMockExist) {
       return JSON.parse(
