@@ -3,6 +3,8 @@ const http = require('http')
 const url = require('url')
 const MockConfig = require('../config')
 
+const ENCODING = 'utf-8'
+
 class Proxy {
   constructor(config) {
     this.config = config
@@ -18,7 +20,7 @@ class Proxy {
 
   listener(req, res) {
     let body = ''
-    req.setEncoding('utf-8')
+    req.setEncoding(ENCODING)
     req.on('data', chunk => (body += chunk))
     req.on('end', () => {
       let { hostname, port, path } = url.parse(req.url)
@@ -35,8 +37,11 @@ class Proxy {
 
       console.log('request: %s %s %s %s', hostname, port, path, method)
 
+      // response set Header
+      res.setHeader('content-type', 'text/plain; charset=' + ENCODING)
+
       if (mock) {
-        res.end(JSON.stringify(mock))
+        res.end(JSON.stringify(mock), ENCODING)
         return this
       }
 
