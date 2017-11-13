@@ -37,12 +37,14 @@ class Proxy {
 
       console.log('%s %s %s %s %s', Date(), method, hostname, port || 80, path)
 
-      // response set Header
-      res.setHeader('content-type', 'text/plain; charset=' + ENCODING)
-      res.setHeader('Access-Control-Allow-Origin', req.headers['origin'] || '*')
-      res.setHeader('Access-Control-Allow-Credentials', 'true')
-
       if (mock) {
+        // response set Header
+        res.setHeader('content-type', 'text/plain; charset=' + ENCODING)
+        res.setHeader(
+          'Access-Control-Allow-Origin',
+          req.headers['origin'] || '*'
+        )
+        res.setHeader('Access-Control-Allow-Credentials', 'true')
         res.end(JSON.stringify(mock), ENCODING)
         return this
       }
