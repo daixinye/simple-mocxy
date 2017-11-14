@@ -32,7 +32,7 @@ class Proxy {
         method: method
       })
 
-      let ip = proxyConfig.getIP()
+      let host = proxyConfig.getHost()
       let mock = proxyConfig.getMock()
 
       console.log('%s %s %s %s %s', Date(), method, hostname, port || 80, path)
@@ -50,8 +50,8 @@ class Proxy {
       }
 
       let options = {
-        hostname: ip || hostname,
-        port,
+        hostname: (host && host.ip) || hostname,
+        port: (host && host.port) || port,
         path,
         method,
         headers
