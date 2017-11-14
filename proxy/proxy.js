@@ -32,24 +32,26 @@ class Proxy {
         method: method
       })
 
-      let ip = proxyConfig.getIP()
+      let host = proxyConfig.getHost()
       let mock = proxyConfig.getMock()
 
       console.log('%s %s %s %s %s', Date(), method, hostname, port || 80, path)
 
-      // response set Header
-      res.setHeader('content-type', 'text/plain; charset=' + ENCODING)
-      res.setHeader('Access-Control-Allow-Origin', req.headers['origin'] || '*')
-      res.setHeader('Access-Control-Allow-Credentials', 'true')
-
       if (mock) {
+        // response set Header
+        res.setHeader('content-type', 'text/plain; charset=' + ENCODING)
+        res.setHeader(
+          'Access-Control-Allow-Origin',
+          req.headers['origin'] || '*'
+        )
+        res.setHeader('Access-Control-Allow-Credentials', 'true')
         res.end(JSON.stringify(mock), ENCODING)
         return this
       }
 
       let options = {
-        hostname: ip || hostname,
-        port,
+        hostname: (host && host.ip) || hostname,
+        port: (host && host.port) || port,
         path,
         method,
         headers

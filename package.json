@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./proxy/index.js",
-    "test-config": "node ./test/config.js"
+    "test-config": "node ./test/config.js",
+    "test-host": "node ./test/host.js"
   },
   "repository": {
     "type": "git",
