@@ -16,8 +16,8 @@ class Config {
     })
   }
 
-  getIP() {
-    return this.hosts.getIP(this.request.host)
+  getHost() {
+    return this.hosts.get(this.request.host)
   }
 }
 
