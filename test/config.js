@@ -1,4 +1,5 @@
 const Config = require('../config/index.js')
+const test = require('./test')
 
 const cases = [
   // 正常 case
@@ -9,8 +10,8 @@ const cases = [
       method: 'get'
     })
 
-    console.log(config.getMock())
-    console.log(config.getIP())
+    this.equal(config.getMock().mock, true)
+    this.equal(config.getHost().ip, '127.0.0.1')
   },
   // path 为空时
   function() {
@@ -20,9 +21,9 @@ const cases = [
       method: 'get'
     })
 
-    console.log(config.getMock())
-    console.log(config.getIP())
+    this.equal(config.getMock(), null)
+    this.equal(config.getHost().ip, '127.0.0.1')
   }
 ]
 
-cases.forEach(f => f.call(null))
+test(cases)
