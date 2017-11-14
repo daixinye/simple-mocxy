@@ -1,6 +1,7 @@
 const Config = require('../config/index.js')
 
 const cases = [
+  // 正常 case
   function() {
     let config = new Config({
       host: 'api.guapizuzhi.com',
@@ -10,7 +11,18 @@ const cases = [
 
     console.log(config.getMock())
     console.log(config.getIP())
+  },
+  // path 为空时
+  function() {
+    let config = new Config({
+      host: 'api.guapizuzhi.com',
+      path: '',
+      method: 'get'
+    })
+
+    console.log(config.getMock())
+    console.log(config.getIP())
   }
 ]
 
-cases[0]()
+cases.forEach(f => f.call(null))
