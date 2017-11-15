@@ -1,7 +1,9 @@
 const fs = require('fs')
+const readline = require('readline')
+const os = require('os')
 const _path = require('path')
 
-const HOSTS_PATH = _path.join(__dirname, '../data/hosts.json')
+const HOSTS_PATH = _path.join(__dirname, '../data/hosts')
 
 class Host {
   constructor(ip, port, headers) {
@@ -52,18 +54,66 @@ class Hosts {
   _read() {
     let isHostsExist = fs.existsSync(HOSTS_PATH)
     if (isHostsExist) {
-      return JSON.parse(fs.readFileSync(HOSTS_PATH, { encoding: 'utf-8' }))
+      let parser = new Parser(
+        fs.readFileSync(HOSTS_PATH, { encoding: 'utf-8' })
+      )
+      return parser.parse()
     } else {
       let hosts = {}
-      fs.writeFileSync(HOSTS_PATH, JSON.stringify(hosts, null, 2), {
-        encoding: 'utf-8'
-      })
+      this._save({})
       return hosts
     }
   }
 
   _save(hosts) {
-    fs.writeFileSync(HOSTS_PATH, JSON.stringify(hosts, null, 2), hosts)
+    // fs.writeFileSync(HOSTS_PATH, JSON.stringify(hosts, null, 2), hosts)
   }
 }
+
+class Parser {
+  constructor(file) {
+    this.file = file
+    this.INDENT = '  '
+    this.lineStack = file.split(os.EOL)
+  }
+  parse() {
+    let root = {}
+    let current = root
+    let stack = [root]
+
+    this.lineStack.forEach(line => {
+      line = this.readline(line)
+      if (!line.key) return
+
+      current = stack[line.indent]
+      if (line.key && line.value) {
+        current[line.key] = line.value
+      }
+      if (line.key && !line.value) {
+        current[line.key] = {}
+        stack.push(current[line.key])
+      }
+    })
+    return root
+  }
+  readline(line) {
+    let obj = {
+      indent: 0,
+      key: null,
+      value: null
+    }
+    line = line.split('#')[0].split(this.INDENT)
+    line.forEach(i => {
+      if (i === '') {
+        obj.indent++
+      } else {
+        i = i.split(' ')
+        obj.key = i[0] || null
+        obj.value = i[1] || null
+      }
+    })
+    return obj
+  }
+}
+
 module.exports = Hosts
