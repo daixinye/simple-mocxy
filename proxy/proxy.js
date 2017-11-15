@@ -90,6 +90,9 @@ class Proxy {
         })
         .on('error', err => res.end())
 
+      proxyReq.write(body)
+      proxyReq.end()
+
       req.pipe(proxyReq)
       return this
     })
