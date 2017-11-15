@@ -51,7 +51,7 @@ class Proxy {
 
       let options = {
         hostname,
-        port: port || 80,
+        port,
         path,
         method,
         headers
