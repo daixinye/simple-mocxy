@@ -1,9 +1,15 @@
-// 模块
 const fs = require('fs')
 const _path = require('path')
 
-// 常量
 const HOSTS_PATH = _path.join(__dirname, '../data/hosts.json')
+
+class Host {
+  constructor(ip, port, headers) {
+    this.ip = ip || ''
+    this.port = port || 80
+    this.headers = headers || {}
+  }
+}
 
 class Hosts {
   constructor() {
@@ -12,14 +18,16 @@ class Hosts {
 
   // 获取配置
   get(hostname) {
-    let config = this.hosts[hostname]
-    switch (typeof config) {
+    let hostConfig = this.hosts[hostname]
+    switch (typeof hostConfig) {
       case 'string':
-        return {
-          ip: config
-        }
+        var ip = hostConfig
+        return new Host(ip)
       case 'object':
-        return config
+        var ip = hostConfig.ip
+        var port = hostConfig.port
+        var headers = hostConfig.headers
+        return new Host(ip, port, headers)
       default:
         return null
     }
