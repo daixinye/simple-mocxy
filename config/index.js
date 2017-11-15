@@ -1,7 +1,6 @@
-'use strict'
 const Hosts = require('./host')
 const Mocks = require('./mock')
-// 类
+
 class Config {
   constructor(request) {
     this.request = request

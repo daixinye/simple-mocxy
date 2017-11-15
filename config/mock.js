@@ -1,8 +1,6 @@
-// 模块
 const fs = require('fs')
 const _path = require('path')
 
-// 常量
 const MOCKS_PATH = _path.resolve(__dirname, '../data/mocks')
 
 class Mocks {
