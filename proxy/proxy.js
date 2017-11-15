@@ -51,7 +51,7 @@ class Proxy {
 
       let options = {
         hostname,
-        port,
+        port: port || 80,
         path,
         method,
         headers
@@ -89,6 +89,9 @@ class Proxy {
           proxyRes.pipe(res)
         })
         .on('error', err => res.end())
+
+      proxyReq.write(body)
+      proxyReq.end()
 
       req.pipe(proxyReq)
       return this
