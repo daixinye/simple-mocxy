@@ -91,7 +91,7 @@ class Parser {
       }
       if (line.key && !line.value) {
         current[line.key] = {}
-        stack.push(current[line.key])
+        stack[line.indent + 1] = current[line.key]
       }
     })
     return root
