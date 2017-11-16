@@ -16,6 +16,14 @@ class Host {
 class Hosts {
   constructor() {
     this.hosts = this._read()
+    fs.watchFile(
+      HOSTS_PATH,
+      { persistent: true, interval: 500 },
+      (curr, prev) => {
+        console.log('Hosts 配置发生改变，已重新加载')
+        this.hosts = this._read()
+      }
+    )
   }
 
   // 获取配置
