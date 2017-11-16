@@ -1,24 +1,17 @@
-'use strict'
 const Hosts = require('./host')
 const Mocks = require('./mock')
-// 类
-class Config {
-  constructor(request) {
-    this.request = request
-    this.hosts = new Hosts()
-    this.mock = new Mocks()
-  }
 
-  getMock() {
-    return this.mock.getMock({
-      host: this.request.host,
-      path: this.request.path
+const hosts = new Hosts()
+const mocks = new Mocks()
+
+module.exports = {
+  getMock(host, path) {
+    return mocks.getMock({
+      host,
+      path
     })
-  }
-
-  getIP() {
-    return this.hosts.getIP(this.request.host)
+  },
+  getHost(hostname) {
+    return hosts.get(hostname)
   }
 }
-
-module.exports = Config

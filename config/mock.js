@@ -1,8 +1,6 @@
-// 模块
 const fs = require('fs')
 const _path = require('path')
 
-// 常量
 const MOCKS_PATH = _path.resolve(__dirname, '../data/mocks')
 
 class Mocks {
@@ -19,7 +17,7 @@ class Mocks {
 
   _readMock(host, path) {
     let mockPath = this._getMockLocalPath(host, path)
-    let isMockExist = fs.existsSync(mockPath)
+    let isMockExist = fs.existsSync(mockPath) && fs.statSync(mockPath).isFile()
     if (isMockExist) {
       return JSON.parse(
         fs.readFileSync(mockPath, {
