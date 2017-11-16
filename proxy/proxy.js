@@ -1,7 +1,7 @@
 'use strict'
 const http = require('http')
 const url = require('url')
-const ProxyConfig = require('../config')
+const proxyConfig = require('../config')
 
 const ENCODING = 'utf-8'
 
@@ -26,14 +26,8 @@ class Proxy {
       let { hostname, port, path } = url.parse(req.url)
       let { method, headers } = req
 
-      let proxyConfig = new ProxyConfig({
-        host: hostname,
-        path: path,
-        method: method
-      })
-
-      let host = proxyConfig.getHost()
-      let mock = proxyConfig.getMock()
+      let host = proxyConfig.getHost(hostname, path)
+      let mock = proxyConfig.getMock(path)
 
       console.log('%s %s %s %s %s', Date(), method, hostname, port || 80, path)
 
