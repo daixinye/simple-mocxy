@@ -4,9 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node ./proxy/index.js",
-    "test-config": "node ./test/config.js",
-    "test-host": "node ./test/host.js"
+    "start": "node ./index.js"
   },
   "repository": {
     "type": "git",
@@ -20,5 +18,8 @@
   "homepage": "https://github.com/guapizuzhi/simple-mocxy#readme",
   "devDependencies": {
     "eslint-config-standard": "^10.2.1"
+  },
+  "dependencies": {
+    "js-yaml": "^3.11.0"
   }
 }

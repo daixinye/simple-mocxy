@@ -1,7 +1,7 @@
 const fs = require('fs')
 const _path = require('path')
 
-const MOCKS_PATH = _path.resolve(__dirname, '../data/mocks')
+const MOCKS_PATH = _path.resolve(__dirname, '../config/mocks')
 
 class Mocks {
   constructor() {}

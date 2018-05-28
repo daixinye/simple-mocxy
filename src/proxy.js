@@ -1,9 +1,26 @@
 'use strict'
 const http = require('http')
 const url = require('url')
-const proxyConfig = require('../config')
+
+const Hosts = require('./host')
+const Mocks = require('./mock')
 
 const ENCODING = 'utf-8'
+
+const hosts = new Hosts()
+const mocks = new Mocks()
+
+const proxyConfig = {
+  getMock(host, path) {
+    return mocks.getMock({
+      host,
+      path
+    })
+  },
+  getHost(hostname) {
+    return hosts.get(hostname)
+  }
+}
 
 class Proxy {
   constructor(config) {
@@ -27,7 +44,7 @@ class Proxy {
       let { method, headers } = req
 
       let host = proxyConfig.getHost(hostname, path)
-      let mock = proxyConfig.getMock(path)
+      let mock = proxyConfig.getMock(hostname, path)
 
       console.log('%s %s %s %s %s', Date(), method, hostname, port || 80, path)
 
