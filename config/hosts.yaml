@@ -13,15 +13,3 @@ m.guapizuzhi.com:
   path:
     /j: 127.0.0.2
 
-kdback.study.163.com: 10.165.125.3
-kb.stu.126.net: 10.165.125.3 
-
-local.kdback.study.163.com:
-  ip: 127.0.0.1
-  port: 8002
-  path:
-    /j:
-      ip: 10.165.125.3
-      port: 80
-      headers:
-        =host: kdback.study.163.com 
