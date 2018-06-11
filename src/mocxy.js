@@ -1,5 +1,6 @@
 'use strict';
 const http = require('http');
+const https = require('https');
 const url = require('url');
 const net = require('net');
 
@@ -35,7 +36,7 @@ class Mocxy {
   httpsListener(req, cltSocket, head) {
     let srvUrl = url.parse(`http://${req.url}`);
 
-    console.log(`HTTPS ${srvUrl.hostname}:${srvUrl.port}`);
+    // console.log(`HTTPS ${srvUrl.hostname}:${srvUrl.port}`);
 
     var srvSocket = net.connect(
       srvUrl.port,
@@ -68,10 +69,16 @@ class Mocxy {
       let host = proxyConfig.getHost(hostname, path);
       let mock = proxyConfig.getMock(hostname, path);
 
-      console.log('HTTP %s %s %s %s', method, hostname, port || 80, path);
+      let options = {
+        hostname,
+        port,
+        path,
+        method,
+        headers
+      };
 
       if (mock) {
-        // response set Header
+        // 返回 mock 数据
         res.setHeader('content-type', 'text/plain; charset=' + ENCODING);
         res.setHeader(
           'Access-Control-Allow-Origin',
@@ -81,14 +88,6 @@ class Mocxy {
         res.end(JSON.stringify(mock), ENCODING);
         return;
       }
-
-      let options = {
-        hostname,
-        port,
-        path,
-        method,
-        headers
-      };
 
       if (host) {
         options.hostname = host.ip || hostname;
@@ -107,17 +106,57 @@ class Mocxy {
             default:
           }
         }
+
+        console.log(
+          'HTTP %s %s %s %s => %s %s %s',
+          method,
+          hostname,
+          port || 80,
+          path,
+          host.protocal,
+          host.ip,
+          host.port
+        );
+
+        if (host.protocal === 'https') {
+          let httpsReq = https
+            .request(options, httpsRes => {
+              httpsRes.headers['simple-moxcy-host'] = options.hostname;
+              httpsRes.headers['simple-moxcy-port'] = options.port;
+              httpsRes.headers['simple-moxcy-headers'] = JSON.stringify(
+                host.headers || {}
+              );
+
+              res.writeHead(httpsRes.statusCode, httpsRes.headers);
+              httpsRes.pipe(res);
+            })
+            .on('error', err => res.end());
+
+          req.pipe(httpsReq);
+
+          return this;
+        } else {
+          let proxyReq = http
+            .request(options, proxyRes => {
+              if (host) {
+                proxyRes.headers['simple-moxcy-host'] = options.hostname;
+                proxyRes.headers['simple-moxcy-port'] = options.port;
+                proxyRes.headers['simple-moxcy-headers'] = JSON.stringify(
+                  host.headers || {}
+                );
+              }
+              res.writeHead(proxyRes.statusCode, proxyRes.headers);
+              proxyRes.pipe(res);
+            })
+            .on('error', err => res.end());
+
+          req.pipe(proxyReq);
+          return this;
+        }
       }
 
       let proxyReq = http
         .request(options, proxyRes => {
-          if (host) {
-            proxyRes.headers['simple-moxcy-host'] = options.hostname;
-            proxyRes.headers['simple-moxcy-port'] = options.port;
-            proxyRes.headers['simple-moxcy-headers'] = JSON.stringify(
-              host.headers || {}
-            );
-          }
           res.writeHead(proxyRes.statusCode, proxyRes.headers);
           proxyRes.pipe(res);
         })

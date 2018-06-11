@@ -11,5 +11,7 @@ m.local.guapizuzhi.com:
 m.guapizuzhi.com:
   ip: 127.0.0.1
   path:
-    /j: 127.0.0.2
+    /j:
+      protocal: https
+      ip: 127.0.0.2
 
