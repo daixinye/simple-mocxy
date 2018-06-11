@@ -1,14 +1,12 @@
 'use strict';
 const http = require('http');
 const url = require('url');
+const net = require('net');
 
-const Hosts = require('./host');
-const Mocks = require('./mock');
+const hosts = require('./host');
+const mocks = require('./mock');
 
 const ENCODING = 'utf-8';
-
-const hosts = new Hosts();
-const mocks = new Mocks();
 
 const proxyConfig = {
   getMock(host, path) {
@@ -22,20 +20,44 @@ const proxyConfig = {
   }
 };
 
-class Proxy {
+class Mocxy {
   constructor(config) {
-    this.config = config;
-    this.server = http.createServer(this.listener);
+    this.server = http.createServer(this.httpListener);
+    this.server.on('connect', this.httpsListener);
   }
 
-  start() {
-    let port = this.config.port || 9999;
+  start(port = 9999) {
     this.server.listen(port).on('listening', () => {
       console.log('server started on %s \n', port);
     });
   }
 
-  listener(req, res) {
+  httpsListener(req, cltSocket, head) {
+    let srvUrl = url.parse(`http://${req.url}`);
+
+    console.log(`HTTPS ${srvUrl.hostname}:${srvUrl.port}`);
+
+    var srvSocket = net.connect(
+      srvUrl.port,
+      srvUrl.hostname,
+      () => {
+        cltSocket.write(
+          'HTTP/1.1 200 Connection Established\r\n' +
+            'Proxy-agent: Simple-Moxcy\r\n' +
+            '\r\n'
+        );
+        srvSocket.write(head);
+        srvSocket.pipe(cltSocket);
+        cltSocket.pipe(srvSocket);
+      }
+    );
+
+    srvSocket.on('error', e => {
+      console.error(e);
+    });
+  }
+
+  httpListener(req, res) {
     let body = '';
     req.setEncoding(ENCODING);
     req.on('data', chunk => (body += chunk));
@@ -46,7 +68,7 @@ class Proxy {
       let host = proxyConfig.getHost(hostname, path);
       let mock = proxyConfig.getMock(hostname, path);
 
-      console.log('%s %s %s %s %s', Date(), method, hostname, port || 80, path);
+      console.log('HTTP %s %s %s %s', method, hostname, port || 80, path);
 
       if (mock) {
         // response set Header
@@ -110,4 +132,4 @@ class Proxy {
   }
 }
 
-module.exports = Proxy;
+module.exports = new Mocxy();

@@ -30,4 +30,4 @@ class Mocks {
   }
 }
 
-module.exports = Mocks;
+module.exports = new Mocks();

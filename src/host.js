@@ -89,4 +89,4 @@ class Hosts {
   _save(hosts) {}
 }
 
-module.exports = Hosts;
+module.exports = new Hosts();

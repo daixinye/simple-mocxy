@@ -1,7 +1,3 @@
-const Proxy = require('./src/proxy.js');
+const mocxy = require('./src/mocxy.js');
 
-const proxy = new Proxy({
-  port: 9999
-});
-
-proxy.start();
+mocxy.start();
