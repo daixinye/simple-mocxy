@@ -29,14 +29,12 @@ class Mocxy {
 
   start(port = 9999) {
     this.server.listen(port).on('listening', () => {
-      console.log('server started on %s \n', port);
+      console.log('mocxy started on %s \n', port);
     });
   }
 
   httpsListener(req, cltSocket, head) {
     let srvUrl = url.parse(`http://${req.url}`);
-
-    // console.log(`HTTPS ${srvUrl.hostname}:${srvUrl.port}`);
 
     var srvSocket = net.connect(
       srvUrl.port,
@@ -61,21 +59,32 @@ class Mocxy {
   httpListener(req, res) {
     let body = '';
     req.setEncoding(ENCODING);
+
+    let { hostname, port, path } = url.parse(req.url);
+    let { method, headers } = req;
+
+    let host = proxyConfig.getHost(hostname, path);
+    let mock = proxyConfig.getMock(hostname, path);
+
+    let options = {
+      hostname,
+      port,
+      path,
+      method,
+      headers
+    };
+
+    if(!mock && !host){
+      // 透明转发
+      let proxyReq = http
+        .request(options, proxyRes => {
+          proxyRes.pipe(res);
+        })
+      req.pipe(proxyReq);
+    }
+    
     req.on('data', chunk => (body += chunk));
     req.on('end', () => {
-      let { hostname, port, path } = url.parse(req.url);
-      let { method, headers } = req;
-
-      let host = proxyConfig.getHost(hostname, path);
-      let mock = proxyConfig.getMock(hostname, path);
-
-      let options = {
-        hostname,
-        port,
-        path,
-        method,
-        headers
-      };
 
       if (mock) {
         // 返回 mock 数据
@@ -155,17 +164,6 @@ class Mocxy {
         }
       }
 
-      let proxyReq = http
-        .request(options, proxyRes => {
-          res.writeHead(proxyRes.statusCode, proxyRes.headers);
-          proxyRes.pipe(res);
-        })
-        .on('error', err => res.end());
-
-      proxyReq.write(body);
-      proxyReq.end();
-
-      req.pipe(proxyReq);
       return this;
     });
   }
