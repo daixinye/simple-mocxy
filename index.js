@@ -1,3 +1,3 @@
-const mocxy = require('./src/mocxy.js');
+const mocxy = require('./lib/mocxy.js');
 
 mocxy.start();
