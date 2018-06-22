@@ -1,7 +1,19 @@
-const Hosts = require('../src/host');
+const assert = require('assert')
 
-let hosts = new Hosts();
+const hosts = require('../lib/host');
 
-console.log(hosts.get('m.guapizuzhi.com', '/j/abc'));
-console.log(hosts.get('m.guapizuzhi.com', ''));
-console.log(hosts.get('m.guapizuzhi.com'));
+assert.deepEqual(hosts.get('m.guapizuzhi.com', '/j/abc'), {
+    ip: '127.0.0.2',
+    headers: {},
+    protocal: 'https',
+    port: 443
+})
+
+assert.deepEqual(hosts.get('m.guapizuzhi.com'), {
+    ip: '127.0.0.1',
+    headers: {},
+    protocal: 'http',
+    port: 80
+})
+
+console.log('done')
