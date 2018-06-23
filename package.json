@@ -4,7 +4,8 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "node ./main.js"
+    "start": "node ./main.js",
+    "createCA": "node ./lib/utils/createCA.js"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,8 @@
     "eslint-config-standard": "^10.2.1"
   },
   "dependencies": {
-    "js-yaml": "^3.11.0"
+    "js-yaml": "^3.11.0",
+    "mkdirp": "^0.5.1",
+    "node-forge": "^0.7.5"
   }
 }
