@@ -16,4 +16,4 @@ assert.deepEqual(hosts.get('m.guapizuzhi.com'), {
     port: 80
 })
 
-console.log('done')
+process.exit(0)
