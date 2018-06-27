@@ -5,11 +5,11 @@ const HOSTS_PATH = _path.join(__dirname, '../config/hosts.yaml')
 const jsYaml = require('js-yaml')
 
 class Host {
-    constructor(ip, port, headers, protocal) {
+    constructor(ip, port, headers, protocol) {
         this.ip = ip || ''
         this.headers = headers || {}
-        this.protocal = protocal || 'http'
-        this.port = port || (protocal === 'https' ? 443 : 80)
+        this.protocol = protocol || 'http'
+        this.port = port || (protocol === 'https' ? 443 : 80)
     }
 }
 
@@ -49,8 +49,8 @@ class Hosts {
                 ip = hostConfig.ip
                 var port = hostConfig.port
                 var headers = hostConfig.headers
-                var protocal = hostConfig.protocal
-                return new Host(ip, port, headers, protocal)
+                var protocol = hostConfig.protocol
+                return new Host(ip, port, headers, protocol)
             default:
                 return null
         }
