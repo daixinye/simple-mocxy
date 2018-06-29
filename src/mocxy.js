@@ -51,13 +51,6 @@ function doTransparent(req, res, options) {
                 proxyRes.pipe(res)
             })
             .on('error', err => {
-                log(
-                    `https: ${options.method} ${options.hostname}:${
-                        options.port
-                    }${options.path} `,
-                    options,
-                    err
-                )
                 res.end()
             })
         req.pipe(proxyReq)
@@ -67,13 +60,6 @@ function doTransparent(req, res, options) {
             proxyRes.pipe(res)
         })
         proxyReq.on('error', err => {
-            log(
-                `tranparent: ${options.method} ${options.hostname}:${
-                    options.port
-                }${options.path} `,
-                options,
-                err
-            )
             res.end()
         })
         req.pipe(proxyReq)
@@ -81,7 +67,6 @@ function doTransparent(req, res, options) {
 }
 
 function doMock(req, res, options, mock) {
-    // 返回 mock 数据
     res.setHeader('content-type', 'text/plain; charset=' + ENCODING)
     res.setHeader('Access-Control-Allow-Origin', req.headers['origin'] || '*')
     res.setHeader('Access-Control-Allow-Credentials', 'true')
@@ -171,7 +156,7 @@ function redirect(req, res, options) {
 }
 
 class Mocxy {
-    constructor(config) {
+    constructor() {
         this.server = http.createServer(this.httpListener)
         this.server.on('connect', this.httpsListener)
     }
@@ -185,10 +170,32 @@ class Mocxy {
     httpsListener(req, cltSocket, head) {
         let srvUrl = url.parse(`http://${req.url}`)
 
+        let host = proxyConfig.getHost(srvUrl.hostname, srvUrl.path)
+        let mock = proxyConfig.getMock(srvUrl.hostname, srvUrl.path)
+
+        if (!mock && !host) {
+            let srvSocket = net.connect(
+                srvUrl.port,
+                srvUrl.hostname,
+                () => {
+                    cltSocket.write(
+                        'HTTP/1.1 200 Connection Established\r\n' +
+                            'Proxy-agent: simple-mocxy\r\n' +
+                            '\r\n'
+                    )
+                    srvSocket.write(head)
+                    srvSocket.pipe(cltSocket)
+                    cltSocket.pipe(srvSocket)
+                }
+            )
+            srvSocket.on('error', err => {})
+            return
+        }
+
         createFakeHttpsWebSite(
             srvUrl.hostname,
             port => {
-                var srvSocket = net.connect(
+                let srvSocket = net.connect(
                     port,
                     '127.0.0.1',
                     () => {
