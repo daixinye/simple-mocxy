@@ -6,7 +6,6 @@ const net = require('net')
 
 const hosts = require('./host')
 const mocks = require('./mock')
-const cache = require('./cache')
 
 const createFakeHttpsWebSite = require('./utils/createFakeWebsite')
 
@@ -34,12 +33,6 @@ const proxyConfig = {
     },
     getHost(hostname, path) {
         return hosts.get(hostname, path)
-    }
-}
-
-function saveCookie(options) {
-    if (options.headers.cookie) {
-        cache.set('cookie', options.hostname, options.headers.cookie)
     }
 }
 
@@ -76,8 +69,6 @@ function doMock(req, res, options, mock) {
 function doSwitchHost(req, res, options, host) {
     options.hostname = host.ip || options.hostname
     options.port = host.port || 80
-    host.headers['=cookie'] =
-        cache.get('cookie', options.hostname) || options.headers['cookie'] || ''
     for (let header in host.headers) {
         let operator = header[0]
         let value = host.headers[header]
@@ -139,7 +130,6 @@ function redirect(req, res, options) {
     let mock = proxyConfig.getMock(options.hostname, options.path)
 
     if (!mock && !host) {
-        saveCookie(options)
         doTransparent(req, res, options)
     }
 
@@ -225,7 +215,6 @@ class Mocxy {
                     path: urlObject.path,
                     headers: req.headers
                 }
-
                 redirect(req, res, options)
             }
         )
