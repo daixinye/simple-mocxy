@@ -6,7 +6,6 @@ const net = require('net')
 
 const hosts = require('./host')
 const mocks = require('./mock')
-const cache = require('./cache')
 
 const createFakeHttpsWebSite = require('./utils/createFakeWebsite')
 
@@ -37,12 +36,6 @@ const proxyConfig = {
     }
 }
 
-function saveCookie(options) {
-    if (options.headers.cookie) {
-        cache.set('cookie', options.hostname, options.headers.cookie)
-    }
-}
-
 function doTransparent(req, res, options) {
     if (options.protocol === 'https:') {
         let proxyReq = https
@@ -51,13 +44,6 @@ function doTransparent(req, res, options) {
                 proxyRes.pipe(res)
             })
             .on('error', err => {
-                log(
-                    `https: ${options.method} ${options.hostname}:${
-                        options.port
-                    }${options.path} `,
-                    options,
-                    err
-                )
                 res.end()
             })
         req.pipe(proxyReq)
@@ -67,13 +53,6 @@ function doTransparent(req, res, options) {
             proxyRes.pipe(res)
         })
         proxyReq.on('error', err => {
-            log(
-                `tranparent: ${options.method} ${options.hostname}:${
-                    options.port
-                }${options.path} `,
-                options,
-                err
-            )
             res.end()
         })
         req.pipe(proxyReq)
@@ -81,7 +60,6 @@ function doTransparent(req, res, options) {
 }
 
 function doMock(req, res, options, mock) {
-    // 返回 mock 数据
     res.setHeader('content-type', 'text/plain; charset=' + ENCODING)
     res.setHeader('Access-Control-Allow-Origin', req.headers['origin'] || '*')
     res.setHeader('Access-Control-Allow-Credentials', 'true')
@@ -91,8 +69,6 @@ function doMock(req, res, options, mock) {
 function doSwitchHost(req, res, options, host) {
     options.hostname = host.ip || options.hostname
     options.port = host.port || 80
-    host.headers['=cookie'] =
-        cache.get('cookie', options.hostname) || options.headers['cookie'] || ''
     for (let header in host.headers) {
         let operator = header[0]
         let value = host.headers[header]
@@ -154,7 +130,6 @@ function redirect(req, res, options) {
     let mock = proxyConfig.getMock(options.hostname, options.path)
 
     if (!mock && !host) {
-        saveCookie(options)
         doTransparent(req, res, options)
     }
 
@@ -171,7 +146,7 @@ function redirect(req, res, options) {
 }
 
 class Mocxy {
-    constructor(config) {
+    constructor() {
         this.server = http.createServer(this.httpListener)
         this.server.on('connect', this.httpsListener)
     }
@@ -185,10 +160,32 @@ class Mocxy {
     httpsListener(req, cltSocket, head) {
         let srvUrl = url.parse(`http://${req.url}`)
 
+        let host = proxyConfig.getHost(srvUrl.hostname, srvUrl.path)
+        let mock = proxyConfig.getMock(srvUrl.hostname, srvUrl.path)
+
+        if (!mock && !host) {
+            let srvSocket = net.connect(
+                srvUrl.port,
+                srvUrl.hostname,
+                () => {
+                    cltSocket.write(
+                        'HTTP/1.1 200 Connection Established\r\n' +
+                            'Proxy-agent: simple-mocxy\r\n' +
+                            '\r\n'
+                    )
+                    srvSocket.write(head)
+                    srvSocket.pipe(cltSocket)
+                    cltSocket.pipe(srvSocket)
+                }
+            )
+            srvSocket.on('error', err => {})
+            return
+        }
+
         createFakeHttpsWebSite(
             srvUrl.hostname,
             port => {
-                var srvSocket = net.connect(
+                let srvSocket = net.connect(
                     port,
                     '127.0.0.1',
                     () => {
@@ -218,7 +215,6 @@ class Mocxy {
                     path: urlObject.path,
                     headers: req.headers
                 }
-
                 redirect(req, res, options)
             }
         )
