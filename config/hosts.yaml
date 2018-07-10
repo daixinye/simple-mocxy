@@ -1,17 +1,13 @@
-api.guapizuzhi.com:
-  ip: 127.0.0.1
-
-m.local.guapizuzhi.com:
-  ip: 127.0.0.1
-  port: 8000
-  headers: 
-    =simple-mocxy: true
-    +cookie: mock=1;
+www.guapizuzhi.com: 127.0.0.1
 
 m.guapizuzhi.com:
+  protocol: http
   ip: 127.0.0.1
+  port: 8000
+  headers:
+    =host: guapizuzhi.com
+    +cookie: mock=1;
   path:
-    /j:
-      protocal: https
+    /h5:
+      protocol: https
       ip: 127.0.0.2
-
