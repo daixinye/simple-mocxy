@@ -1,17 +1,7 @@
 {
   "extends": "standard",
-  "plugins": ["prettier"],
-  "rules": {
-    "prettier/prettier": "error"
-  },
   "globals": {
-    "jQuery": true,
-    "$": true,
-    "NEJ": true,
-    "define": true,
-    "window": true,
-    "Regular": true,
-    "console": true,
-    "document": true
+    "describe": true,
+    "it": true
   }
 }
