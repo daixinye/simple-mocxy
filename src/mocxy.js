@@ -167,6 +167,7 @@ class Mocxy {
         }
       )
       srvSocket.on('error', () => {})
+      return
     }
 
     createFakeHttpsWebSite(
