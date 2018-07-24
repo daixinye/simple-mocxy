@@ -48,6 +48,9 @@ function doTransparent (req, res, options) {
 }
 
 function doMock (req, res, options, mock) {
+  req.on('data', () => {})
+  req.on('end', () => {})
+
   res.setHeader('content-type', 'text/plain; charset=' + ENCODING)
   res.setHeader('Access-Control-Allow-Origin', req.headers['origin'] || '*')
   res.setHeader('Access-Control-Allow-Credentials', 'true')
@@ -86,10 +89,20 @@ function doSwitchHost (req, res, options, host) {
         res.writeHead(httpsRes.statusCode, httpsRes.headers)
         httpsRes.pipe(res)
       })
-      .on('error', () => {
-        res.end()
+      .on('error', err => {
+        res.writeHead(400)
+        res.end(
+          JSON.stringify(
+            {
+              host,
+              options,
+              err
+            },
+            null,
+            4
+          )
+        )
       })
-
     req.pipe(httpsReq)
   } else {
     options.protocol = 'http:'
@@ -105,10 +118,20 @@ function doSwitchHost (req, res, options, host) {
         res.writeHead(proxyRes.statusCode, proxyRes.headers)
         proxyRes.pipe(res)
       })
-      .on('error', () => {
-        res.end()
+      .on('error', err => {
+        res.writeHead(400)
+        res.end(
+          JSON.stringify(
+            {
+              host,
+              options,
+              err
+            },
+            null,
+            4
+          )
+        )
       })
-
     req.pipe(proxyReq)
   }
 }
@@ -118,19 +141,16 @@ function redirect (req, res, options) {
   let mock = proxyConfig.getMock(options.hostname, options.path)
 
   if (!mock && !host) {
-    doTransparent(req, res, options)
+    return doTransparent(req, res, options)
   }
 
-  req.on('end', () => {
-    if (mock) {
-      doMock(req, res, options, mock)
-      return
-    }
+  if (mock) {
+    return doMock(req, res, options, mock)
+  }
 
-    if (host) {
-      doSwitchHost(req, res, options, host)
-    }
-  })
+  if (host) {
+    return doSwitchHost(req, res, options, host)
+  }
 }
 
 class Mocxy {
@@ -190,11 +210,9 @@ class Mocxy {
         srvSocket.on('error', () => {})
       },
       (req, res) => {
-        let body = ''
         req.setEncoding(ENCODING)
-        req.on('data', chunk => (body += chunk))
 
-        var urlObject = url.parse(req.url)
+        let urlObject = url.parse(req.url)
         let options = {
           protocol: 'https:',
           hostname: req.headers.host.split(':')[0],
@@ -209,9 +227,7 @@ class Mocxy {
   }
 
   httpListener (req, res) {
-    let body = ''
     req.setEncoding(ENCODING)
-    req.on('data', chunk => (body += chunk))
 
     let { hostname, port, path } = url.parse(req.url)
     let { method, headers } = req
@@ -224,7 +240,6 @@ class Mocxy {
       method,
       headers
     }
-
     redirect(req, res, options)
   }
 }
