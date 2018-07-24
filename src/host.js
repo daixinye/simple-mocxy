@@ -21,7 +21,7 @@ const readConfig = function () {
 
 class Host {
   constructor (ip, port, headers, protocol) {
-    this.ip = ip || ''
+    this.ip = ip || '127.0.0.1'
     this.headers = headers || {}
     this.protocol = protocol || 'http'
     this.port = port || (protocol === 'https' ? 443 : 80)
